@@ -20,6 +20,9 @@ if test $PHP_MAGICKWAND != "no"; then
             done
         fi
         if test -z "$WAND_CONFIG_PATH"; then
+			WAND_CONFIG_PATH=`dirname $0`/
+		fi
+        if test -z "$WAND_CONFIG_PATH"; then
             AC_MSG_ERROR(Cannot locate configuration program MagickWand-config)
         else
             AC_MSG_RESULT(found in $WAND_CONFIG_PATH)

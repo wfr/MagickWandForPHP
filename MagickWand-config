@@ -1,0 +1,35 @@
+#!/bin/sh
+
+# Workaround for MagickWand installations that uses pkg-config, e.g Debian 8
+# -- Wolfgang Frisch <wfr@roembden.net>
+
+pkg-config MagickWand || {
+	echo "pkg-config MagickWand not found!"
+	exit 1
+}
+
+while test $# -gt 0
+do
+	case "$1" in
+	--cflags)
+		pkg-config MagickWand --cflags
+		;;
+	--cppflags)
+		pkg-config MagickWand --cflags
+		;;
+	--libs)
+		pkg-config MagickWand --libs
+		;;
+	--prefix)
+		echo "/usr"
+		;;
+	--version)
+		pkg-config MagickWand --modversion
+		;;
+	*)
+		echo "unknown parameter: $1"
+		exit 1
+		;;
+	esac
+	shift
+done
