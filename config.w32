@@ -1,0 +1,32 @@
+ARG_WITH("magickwand", "ImageMagick support", "no");
+
+if (PHP_MAGICKWAND != "no") {
+
+	if (CHECK_HEADER_ADD_INCLUDE("wand/magick-wand.h", "CFLAGS_MAGICKWAND", PHP_PHP_BUILD + "\\include\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_zlib_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_bzlib_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_jpeg_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_coders_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_filters_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_jbig_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_lcms_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_libxml_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_png_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_tiff_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_ttf_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_wand_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_xlib_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_jp2_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_wmf_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("CORE_RL_magick_.lib", "magickwand", PHP_PHP_BUILD + "\\lib\\imagemagick;" + PHP_MAGICKWAND)
+			&& CHECK_LIB("Gdi32.lib", "magickwand")
+			&& CHECK_LIB("oleaut32.lib", "magickwand")
+			)
+	{
+		ADD_FLAG("CFLAGS_MAGICKWAND", "/D _VISUALC_ /D NeedFunctionPrototypes /D _LIB");
+		EXTENSION('magickwand', 'magickwand.c');
+		AC_DEFINE('HAVE_MAGICKWAND', 1);
+	} else {
+		WARNING("magickwand not enabled; libraries and headers not found");
+	}
+}

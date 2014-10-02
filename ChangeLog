@@ -1,0 +1,1163 @@
+2013-02-08  1.0.9-2 Cristy  <omicronpersei8@image...>
+  * Add support for MagickStatisticImage() (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=10&t=22757).
+
+2013-01-22  1.0.9-2 Mikko Koppanen  <mikko.koppanen@gmail...>
+  * Fixes build with newer ImageMagick
+  * Fixes build when ImageMagick is installed in non-standard location
+
+2012-10-25  1.0.9-1 Cristy  <omicronpersei8@image...>
+  * Add support for MagickSetImageEndian().
+
+2011-11-26  1.0.9-1 Remi Collet <fedora@famil...>
+  * MagickWand for PHP no longer fails to build in ZTS mode.
+
+2011-11-13  1.0.9-0 Herve Seignole  <herve.seignole@gmail...>
+  * PHP > 5.3.0 does not define safe mode or php_checkuid (see
+    http://php.net/manual/en/features.safe-mode).
+  * Use zend_function_entry rather than function_entry.
+
+2009-10-21  1.0.9-0 Cristy  <omicronpersei8@image...>
+  * Update to replace deprecated methods.
+
+2009-02-18  1.0.8-1 Mikko Koppanen  <mikko.koppanen@gmail...>
+  * Add MagickReadImageFile functionality.
+  * Change from ZEND_FE and ZEND_FUNCTION to PHP_FE and PHP_FUNCTION.
+  * Support reading files from ftp, http, and https.
+
+2008-04-13  1.0.7-1 Cristy  <omicronpersei8@image...>
+  * Improved configure script (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=10&t=11023).
+
+2008-02-02  1.0.7-0 Cristy  <omicronpersei8@image...>
+  * Update configure scripts to find/link to MagickCore/MagickWand.
+
+2007-12-10  1.0.4-0 Cristy  <omicronpersei8@image...>
+  * Add MagickSetImageBias() to the MagickWand for PHP API.
+
+2007-09-10  1.0.4-0 Cristy  <omicronpersei8@image...>
+  * The MagickWand author improperly used private data structures.  We
+    instead call MagickGetExceptionType() directly rather than the problematic
+    wand->exception.severity.
+
+2007-04-08  1.0.4-0 Cristy  <omicronpersei8@image...>
+  * Permit all pseudo-image formats except X:.
+
+2007-03-08  1.0.4-0 Cristy  <omicronpersei8@image...>
+  * MagickReadImages() no longer returns a fatal error when a file cannot be
+    found.
+
+2007-02-24  1.0.2-0 Cristy  <omicronpersei8@image...>
+  * Add MagickResetImagePage() to reset the image page canvas and position
+
+2007-02-12  1.0.0-0 Cristy  <omicronpersei8@image...>
+  * Deprecate MagickGetImageProperty()/MagickSetImageAttribute(), use
+    MagickGetImageProperty()/MagickSetImageProperty() instead.
+
+2007-02-08  1.0.0-0 Cristy  <omicronpersei8@image...>
+  * PRV_INIT_RET_STR() macro return NULL terminated strings.
+
+2007-01-08  1.0.0-0 Cristy  <omicronpersei8@image...>
+  * Add MagickOrderedPosterizeImage() method.
+
+2006-12-31  0.1.9-0 Cristy  <omicronpersei8@image...>
+  * Add MagickRecolorImage() method.
+  * Requires ImageMagick 6.3.1 or above.
+
+##############################################################################
+
+Sometime in April 2004...
+
+
+- Created "MagickWand :: PHP ImageMagick 6.0+ API" v0.0.1 by using Perl (yes,
+  I am aware of the irony) to scan the Wand C API for any exported functions,
+  and doing some rough substitutions to set up the associated  PHP functions
+
+- Created the 4 main MagickWand resource types:
+  - MagickWand
+  - DrawingWand
+  - PixelWand
+  - PixelIterator
+
+- Scanned the C API functions for the several enum types (constants) that the
+  functions return or require as arguments, and declared the requisite PHP
+  constants. The MagickWand constants in PHP have a "MW_" tacked on to the
+  beginning of their names (fine... "prepended" ;) but are otherwise referred
+  to with the same names as their ImageMagick API counterparts.
+
+- Removed references to X-Windows (various constants and a few functions) from
+  the PHP API -- unless PHP has an interface to X-windows that I haven't heard
+  about yet (lol).
+
+- Cleaned up the bugs in my roughly auto-generated source.
+
+##############################################################################
+
+Late August - early October 2004
+
+- MagickWand for PHP v0.0.5
+
+- Shortened module's name to MagickWand for PHP -- see above ;) the internal
+  name (i.e. for use in dl() function) is "magickwand"
+
+- Created several (maybe too many :) macros to make the various repetitive
+  operations less error prone and easier to code and debug... most of the time
+
+- Standardized (hopefully) the return values of the various wand functions,
+  as follows.
+
+  If a C API function returns:
+
+  - an integer constant, the corresponding PHP function returns an int or
+    FALSE (for faster error verification via === operator), IF the
+    corresponding C API function can set an error
+
+  - an unsigned long or a double, its PHP function returns a float or FALSE,
+    (if the corresponding C API function can set an error)
+
+  - a string, its PHP function returns a string (possibly empty) or FALSE,
+    (if the corresponding C API function can set an error)
+
+  - a Wand/Iterator, its PHP function returns the associated resource type,
+    or FALSE (generally as a result of a (WandType *) NULL being returned)
+
+  - an array of Wands, its PHP function returns the individual wands as
+    elements in a PHP array of Wand resources, or FALSE if (Wand **) NULL
+    was returned, or if the Wand/Iterator the array was retrieved from
+    contained an error condition.
+
+  - void, its PHP function "returns" void
+
+  - Quantum, its PHP function returns a float (this is due to MaxRGB
+    potentially being larger than PHP's int datatype, which corresponds to
+    C's signed long. If ImageMagick has a Quantum depth of 32 bits, the
+    Quantum datatype is actually "unsigned int", and MaxRGB is 4294967295U, a
+    value greater than PHP's int maximum (at least on most machines).
+    For proof, run the PHP script:
+
+    <?php    $MaxRGB = 4294967295;    var_dump( $MaxRGB );    ?>
+
+    The result should be "float(4294967295)". (Also, functions that accept
+    Quantums in C, are set to accept floats in PHP, which are then cast to
+    Quantum, after a check of whether their value is in the correct range is
+    done -- i.e. 0 <= value <= MaxRGB).
+
+    - uses pointers, (or pointers and return values), in order to set multiple
+      (useful) values, those values are returned in a numerically indexed array
+      from the corresponding PHP function, IN C API FUNCTION ARGUMENT ORDER. If
+      the function returns MagickBooleanType or NULL/!NULL, in order to
+      indicate success or failure/error, that value is checked; if it
+      indicates failure/error, the corresponding PHP function returns FALSE.
+      By useful values, I basically mean that boolean return values will not
+      be included in the return array, since the array's existence (or rather
+      the fact that the returned value was NOT explicit PHP FALSE, suitable for
+      === / !== PHP operator testing), will be enough to guage whether there
+      were any errors or failures.
+
+      The following is a direct-from-source example, with added clarification
+      comments:
+      /* Start C code ********************************/
+      /* MagickCompareImages() returns MagickWand structure, and sets the
+         "distortion" variable
+      */
+      comp_wnd = (MagickWand *) MagickCompareImages( mgck_wnd,
+                                                      ref_wnd,
+                                                      (MetricType) metric,
+                                                      &distortion );
+
+      /* Check if MagickCompareImages() succeeded, and, if so, try to register
+         the MagickWand, "comp_wnd", as a PHP resource;
+         MW_ZEND_REGISTER_RESOURCE() is a custom macro that does this
+      */
+      if (   comp_wnd == (MagickWand *) NULL
+          || MW_ZEND_REGISTER_RESOURCE( MagickWand,
+                                        comp_wnd,
+                                        (zval *) NULL,
+                                        &comp_wnd_rsrc_id ) == MagickFalse )
+      {
+           /* If MagickCompareImages() failed, or "comp_wnd" could not be
+              registered as a PHP resource, return false to the script;
+              RETURN_FALSE is a PHP API macro that does this
+           */
+           RETURN_FALSE;
+      }
+      /* If all is successful...
+      */
+      /* Set up value returned to script to be an array; array_init() is
+         a PHP API function that does this
+      */
+      array_init( return_value );
+
+      /* MW_SET_2_RET_ARR_VALS() is a custom macro that adds 2 values to the
+         array to be returned to the script; the values here are the PHP
+         internal resource id of the newly registered comp_wnd MagickWand, and
+         the computed distortion "returned", via pointer,from
+         MagickCompareImages()
+      */
+      MW_SET_2_RET_ARR_VALS(
+          add_next_index_resource( return_value, comp_wnd_rsrc_id ),
+          add_next_index_double( return_value, distortion ) );
+
+      /******************************** End code */
+
+- Modified the functions which accept the complex ImageMagick types
+  AffineMatrix, PointInfo, and PixelPacket; any functions which would have
+  accepted them now accept their members directly, as follows:
+
+  AffineMatrix
+    C:   DrawAffine( (DrawingWand *) drw_wnd, (AffineMatrix *) affine )
+    PHP: DrawAffine( $drw_wnd, (float) $sx, (float) $sy,
+                               (float) $rx, (float) $ry,
+                               (float) $tx, (float) $ty )
+
+  PointInfo
+    the associated PHP functions accept any EVEN amount of numbers over a
+    specified minimum amount -- a six (6) number minumum for DrawBezier() and
+    DrawPolygon() (3 coordinates), and a four (4) number minumum for
+    DrawPolyline() (2 coordinates)
+
+    C:   DrawBezier( (DrawingWand *) drw_wnd,
+                     (unsigned long) num_coords,
+                     (PointInfo *) coordinates )
+    PHP: DrawBezier( $drw_wnd, (float) $x1, (float) $y1,
+                               (float) $x2, (float) $y2,
+                               (float) $x3, (float) $y3 )
+
+    (IMPORTANT NOTE: This has been changed -- see version 0.0.9 notes below)
+
+  PixelPacket
+    there are only two functions that "do" anything with a PixelPacket --
+    PixelGetQuantumColor() and PixelSetQuantumColor().
+
+    PixelSetQuantumColor()
+    C:   PixelSetQuantumColor( (PixelWand *) pxl_wnd,
+                               (PixelPacket *) pxl_pckt )
+    PHP: PixelSetQuantumColor( $pxl_wnd,
+                               (float) red, (float) green,
+                               (float) blue [, (float) opacity] )
+         (Entering opacity is OPTIONAL)
+
+    PixelGetQuantumColor()
+    C:   PixelGetQuantumColor( (PixelWand *) pxl_wnd,
+                               (PixelPacket *) pxl_pckt )
+    PHP: PixelGetQuantumColor( $pxl_wnd )
+         returns Array
+                 {
+                     "r" => red Quantum
+                     "g" => green Quantum
+                     "b" => blue Quantum
+                     "a" => alpha/opacity Quantum
+                 }
+           
+- Created a new PixelIteratorPixelWand "type", so to speak...
+  Here's the issue:
+
+  The C API's
+    
+    PixelWand **PixelGetNextIteratorRow( PixelIterator *iterator )
+
+  returns an array of PixelWands. This has to be translated into a PHP array of
+  PixelWands, for use in the Pixel*() functions -- done.
+
+  Unfortunately, when the script ended, or the requisite PixelWand destruction
+  functions were called on any member of that original array, the
+  DestroyPixelIterator() function (from the C API), which would eventually be
+  called by PHP to destroy a PixelIterator, would cause a really nasty PHP
+  program crash.
+
+  So, the PixelIteratorPixelWand type, which only "exists" in PHP, (and only
+  as le_PixelIteratorPixelWand, [a PHP internal resource type specifier]
+  really), was created. Its PHP (auto) destruction function, which is supposed
+  to be called from the PHP internals when the reference count of
+  le_PixelIteratorPixelWand's associated resources reaches 0, actually does
+  nothing and returns. This is explained in the comments I wrote in the
+  funtion itself, so I cut an pasted it below:
+
+    NOTE: the reason this function does nothing and returns, is due to the
+    fact that the resource this function is supposed to destroy is a PixelWand
+    that was returned as part of an array of PixelWands that were returned by
+    PixelGetNextIteratorRow( pixel_iterator ). The particular PixelWand that
+    this function is supposed to destroy (via the same method as
+    PixelWand_destruction_handler() above) is actually DIRECTLY linked to the
+    PixelIterator that the array it was in, came from.
+    (This, I realized, is because a PixelIterator's PixelWands are ONLY
+    created once, and the array they are in is a set size, and when you
+    request different rows of an image, you actually get the exact same
+    PixelWands, just with different colors, repesenting the colors of the
+    requested row of the image.)
+    As a result, destroying it now, would cause ImageMagick to try to destroy
+    it twice, once now, and once when the PixelIterator_destruction_handler()
+    above is called to destroy the PixelIterator it actually belongs to. This
+    causes ImageMagick to cause a KING KAH-MEHA-MEHA SIZED ERROR, (since it
+    will not destroy what does not exist, i.e. what it has already destroyed)
+    which aborts the entire program, (via an assert() call), in the middle of
+    PHP script execution.
+
+  So, enter the PixelIteratorPixelWand "type", and it's associated handler,
+  which does absolutely nothing!
+
+  'Nuff (maybe too much ;) said. (As a side note.. the Pixel*() functions in
+  PHP will take a tiny bit longer, albeit in C time, to execute than they
+  otherwise might, since they each have to check for PixelWands of both types,
+  i.e. for le_PixelWand and le_PixelIteratorPixelWand type PixelWands.)
+
+- Fixed nasty error with ALL the functions that accepted PHP arrays (I hereby
+  officially curse and damn all ampersands to hell! ;) -- created
+  MW_ITERATE_OVER_PHP_ARRAY macro to avoid said problem in the future.
+
+- Changed the functionality of some of the C-API-connected PHP functions, and
+  added several convenience functions. See the descriptions that follow.
+
+  - DrawBezier(), DrawPolygon(), DrawPolyline(): changed. They now accept
+    even-length lists of numbers, which represent ordinates in co-ordinate
+    space, instead of PointInfo resources/structures; See above.
+
+    (IMPORTANT NOTE: This has been changed -- see version 0.0.9 notes below)
+
+  - DrawSetStrokeDashArray(): (slightly) changed. You can now call it in PHP
+    with nothing or the constant NULL as the value of the array (instead of
+    needing to send an empty array, although you can), in order to clear the
+    stroke dashes like so:
+
+      DrawSetStrokeDashArray( $drw_wnd );
+      or
+      DrawSetStrokeDashArray( $drw_wnd, NULL );
+      or
+      DrawSetStrokeDashArray( $drw_wnd, array() );
+
+  - DrawGetException(), MagickGetException(), PixelGetIteratorException(),
+    PixelGetException(): (slightly) changed. these functions return a two (2)
+    index array like so:
+
+      list( $error_string, $exception_type ) = DrawGetException( $drw_wnd );
+
+    However, the returned array values will either be:
+
+    {
+      [0] => (string) ""
+      [1] => (ExceptionType constant) MW_UndefinedException
+    }
+
+    or 
+
+    {
+      [0] => (string) "Error string here"
+      [1] => (ExceptionType constant) MW_*Exception
+    }
+
+    so the returned array will ALWAYS have values, which means testing it for
+    TRUE/FALSE or empty() will not give you the intuitively obvious results
+    (ie: if there are no errors, the array is NOT empty). Please keep that in
+    mind.
+
+    ExceptionType is a C enum constant type whose members are available in PHP
+    for comparisons, i.e. (continuing from code above):
+
+    if ( $exception_type != MW_UndefinedException )/* Note the "MW_" here */
+    {
+      /* Do something */
+    }
+
+    And FYI: "MW_UndefinedException" is the "everything is OK" ExceptionType;
+    it is the returned ExceptionType if there are no exceptions.
+
+  - DrawGetExceptionString(), MagickGetExceptionString(),
+    PixelGetIteratorExceptionString(), PixelGetExceptionString(): added. These
+    functions only return the error string or "" (empty string) if no errors.
+
+  - DrawGetExceptionType(), MagickGetExceptionType(),
+    PixelGetExceptionType(), PixelGetIteratorExceptionType(): added.
+    Similar reasoning to the *GetExceptionString() functions above, except
+    that these functions return the ExceptionType:
+
+      ExceptionType DrawGetExceptionType( DrawingWand drw_wnd )
+
+  - WandGetException(), WandGetExceptionString(), WandGetExceptionType() :
+    added. Does the same thing as the standard exception functions listed
+    above, except that these functions, accept ANY TYPE of Wand/Iterator as an
+    argument! Makes setting up functions that check for exceptions easier to
+    develop.
+
+  - WandHasException(): added. Checks ANY TYPE of Wand/Iterator for an
+    exception - returns TRUE if the Wand/Iterator has an exception type other
+    than UndefinedException, FALSE otherwise. Defined in PHP as:
+
+      bool WandHasException( AnyWand wnd_or_iter )
+
+    (NOTE: The AnyWand type specifier is NOT a valid type of any kind -- it
+    just indicates that any Wand/Iterator can be supplied as an argument.)
+
+  - DrawGetFillColor(), DrawGetStrokeColor(), DrawGetTextUnderColor(),
+    MagickGetImageColormapColor(): changed.
+    They are defined in the C API similar to the following:
+
+      void DrawGetFillColor( DrawingWand *wand, PixelWand *color )
+
+    meaning you have to pass an already initialized PixelWand as color.
+    This bugged me, so I changed the associated PHP function to
+
+      PixelWand DrawGetFillColor( DrawingWand wand )
+
+    which sounds more like what the function actually does, and follows the
+    form of all the other *Get*() methods, which return what was asked for
+    directly.
+
+------------------------------------------------------------------------------
+See   http://studio.imagemagick.org/magick/viewtopic.php?t=2569
+for an explanation of why the last issue mentioned above (re:
+DrawGet*Color()) exists
+------------------------------------------------------------------------------
+
+  - DrawSetTextAntialias(): (slightly) changed. Declared in PHP as:
+
+      DrawSetTextAntialias( DrawingWand drw_wnd [, bool anti_alias] )
+
+    where (unlike C API) the anti_alias parameter is not required, and will
+    turn on anti-aliasing if it is NOT set.
+
+  - DrawSetFont(): (slightly) changed. Now requires a FULL FONT PATH! It can
+    be a relative path, but it the parameter can not be just a font name
+    that ImageMagick (should) recognize. Here is the C API version:
+
+      void DrawSetFont( DrawingWand *wand, char *font_name )
+
+    But in PHP it is:
+                                           /* NOTE: $font_file_path */
+      bool DrawSetFont( DrawingWand $wand, string $font_file_path )
+
+    If the $font_file_path is NOT
+
+    1) readable
+    2) accessible to the script, (function obeys PHP Safe Mode rules as well),
+
+    the function will output an error and halt script processing.
+
+  - MagickAppendImages(): (slightly) changed. Declared (PHP):
+
+      MagickAppendImages( MagickWand mgck_wnd [, bool stack_vertical] )
+
+    If stack_vertical is not set, or it is FALSE, stack_vertical is set to
+    FALSE (the default) in the call to the C API's MagickAppendImages(),
+    meaning images are stacked left-to-right (horizontally). Set
+    stack_vertical to TRUE to stack them top-to-bottom (vertically).
+
+  - MagickClipPathImage(): (slightly) changed. Declared (PHP):
+
+      MagickClipPathImage(
+        MagickWand mgck_wnd, string path_name [, bool clip_inside] )
+
+    If clip_inside is not set, or it is FALSE, clip_inside is set to FALSE
+    (the default) in the call to the C API's MagickAppendImages(), meaning
+    later operations take effect inside clipping path. Set clip_inside to TRUE
+    to have later operations take effect outside clipping path.
+
+  - MagickCompareImages(), MagickCompareImageChannels(): returns array with
+    the returned MagickWand as index 0, and the computed distortion metric as
+    index 1.
+    I did NOT like this, but I really don't want a situation where this kind
+    of operation would be done twice, which is what would happen if there were
+    separate functions to get the returned MagickWand and to get the
+    distortion. Fortunately, in PHP separating the returned values into
+    variables isn't really that hard:
+
+      list( $dist_wnd, $distortion ) = MagickCompareImageChannels(
+                                          $mgck_wnd,
+                                          $ref_wnd,
+                                          MW_RedChannel,
+                                          MW_MeanAbsoluteErrorMetric );
+
+    where the returned wand gets put into $dist_wnd and the computed
+    distortion between $mgck_wnd and $ref_wnd goes into $distortion.
+
+  - MagickGetImageChannelExtrema(), MagickGetImageExtrema(): changed...
+    slightly. They return an indexed array (PHP) with index 0 = min and
+    index 1 = max, representing the minima and maxima values that the C API
+    functions set.
+
+  - MagickReadImageFile(): changed. These methods set the filename of the
+    image created in the MagickWand to ""; the C API would set the image
+    filename to a temporary file's name.
+
+  - MagickWriteImage(): changed. The return value is NOT a boolean, as in the
+    C API; in PHP it returns a string containing the name of the file
+    written, or FALSE, if an error occurs. (Warning messages are output if
+    errors occur)
+
+    (IMPORTANT NOTE: This has been changed -- see version 0.0.9 notes below)
+
+  - MagickWriteImages(): changed. The return value is NOT a boolean, as in the
+    C API; in PHP it returns an array containing the names of the files
+    written, or FALSE, if an error occurs before any files are written. If an
+    individual file could not be written, the element at its position in the
+    return array will be FALSE as well. (Warning messages are output if errors
+    occur).
+
+    (IMPORTANT NOTE: This has been changed -- see version 0.0.9 notes below)
+
+  - DestroyPixelWands(): changed. (PHP's) DestroyPixelWands() accepts a
+    variable argument list, that can contain EITHER individual PixelWands, or
+    arrays of PixelWands. It is defined (PHP!):
+      
+      bool DestroyPixelWands( mixed pxl_wnd_or_pxl_wnd_array1
+                              [, mixed pxl_wnd_or_pxl_wnd_array2 [, ...]] )
+
+    In other words, you can destroy as many PixelWands, including those that
+    might be in arrays, as you want, at once.
+    The C API's DestroyPixelWands() acted only on an ARRAY of PixelWands.
+    NOTE: PHP's DestroyPixelWands() is actually an alias of
+          DestroyPixelWandArray(), named to match with NewPixelWandArray()
+          below.
+
+  - NewPixelWand(): changed. You can now specify an optional ImageMagick
+    color string, of the type you would supply to PixelSetColor(). C API
+    definition:
+
+      PixelWand *NewPixelWand( void )
+
+    PHP definition:
+
+      PixelWand NewPixelWand( [string imagemagick_col_str] )
+
+  - NewPixelWandArray(): added; this function IS equivalent to ImageMagick's
+    NewPixelWands(), in that they both return an array of PixelWands --
+    NewPixelWandArray() just sounds like what it returns. (I found that
+    NewPixelWands() sounded too much like something that returned a unit, i.e.
+    a whole resource, instead of a collection of individual resources, as
+    NewPixelWandArray() implies, so it was actually confusing me, since I
+    could find no functions, save DestroyPixelWands() which required a
+    PixelWand array as an argument, hence the addition).
+    See DestroyPixelWands() above for the accompanying change in the array
+    destructor's name.
+    NOTE: NewPixelWands() still exists, buy it as an alias to
+          NewPixelWandArray().
+
+  - PixelGetQuantumColor(): changed. returns an array containing the
+    PixelPacket's, members.
+    So instead of the C API's:
+      void PixelGetQuantumColor( PixelWand *wand, PixelPacket *color )
+
+    it is defined in PHP as
+      array PixelGetQuantumColor( PixelWand wand )
+
+    See "Standardized ..." above for the contents of the returned array.
+
+- Asked for, received and PHP implemented IsDrawingWand(), IsMagickWand(),
+  IsPixelIterator(), IsPixelWand(). Useful for determining what type of
+  Wand/Iterator one is dealing with, and whether it is any good (VERY
+  USEFUL, thanks magick). See:
+  
+  http://studio.imagemagick.org/magick/viewtopic.php?t=2604
+  
+  for more information.
+
+- Set up several aliases:
+  Functions in PHP can have a "pseudonym", an alternate name by which they
+  can be called. The aliases I have set up are mostly to maintain
+  compatibilty with the calling conventions of the MagickWand C API, as I
+  have changed a few function names in order to clarify their purposes to
+  PHP programmers.
+
+    Alias                      Implemented PHP function
+    --------------------------------------------------------
+    MagickGetSize              MagickGetWandSize
+    MagickSetSize              MagickSetWandSize
+    DestroyPixelWands          DestroyPixelWandArray
+    NewPixelWands              NewPixelWandArray
+
+- Several functions in MagickWand for PHP do argument verifications.
+  For example, in the PixelSet[colorname]() functions, which accept normalized
+  "0 <= color_val <= 1" color values, the C API functions do the following:
+
+  - if the color_val argument is greater than 1.0, set the internal color
+    value to 1.0;
+
+  - if the color_val argument is less than 0.0, set the internal color value
+    to 0.0;
+
+  - otherwise set the internal color value to color_val, as it is in the
+    right range.
+
+  MagickWand for PHP does the same checks, but if the values are NOT in the
+  right range, an informative, but fatal, error will be output, and script
+  processing will halt.
+  Why have I chosen to be so seemingly "cruel"? Well, since the error messages
+  describe what the problem was, I figure that it will serve to minimize
+  errors in general, plus educate programmers on what sort of inputs various
+  functions require. Plus, the behaviour exhibited in the example above was
+  totally unexpected when I first encountered it, (before I became intimately
+  acquainted with the source and had only skimmed the documentation), so I was
+  trying values like 30, 55, etc., all to no avail. PHP programmers, since the
+  language is so forgiving, and so easy to develop in (relatively), often
+  learn via experimentation / immersion / on-the-fly; I felt that argument
+  verification / helpful error messages would help smooth the
+  ImageMagick / MagickWand for PHP learning curve.
+
+##############################################################################
+
+Sunday, 2004-10-17
+
+- MagickWand for PHP v0.0.6
+
+- Changed / added some functions; See the descriptions that follow.
+
+  - MagickGetImageMimeType(): added. Returns the HTTP MIME media-type of the
+    MagickWand's current image.
+
+  - MagickEchoImageBlob(): added. Outputs the current image's BLOB to stdout,
+    which on the web whould be the user's browser. Returns TRUE on success,
+    FALSE (logging a warning message), on BLOB/output error (i.e., if the BLOB
+    was invalid, or there was a problem outputting it).
+
+  - MagickRemoveImageProfiles(): added. Implements MagickProfileImage()'s
+    functionality of being able to remove all profiles in an image.
+
+  - MagickGetCharWidth(), MagickGetCharHeight(), MagickGetTextAscent(),
+    MagickGetTextDescent(), MagickGetStringWidth(), MagickGetStringHeight(),
+    MagickGetMaxTextAdvance(): added. I implemented these convenience
+    functions as alternatives to calling MagickQueryFontMetrics(); called in
+    the same fashion as MagickQueryFontMetrics().
+
+  - MagickGetVersionNumber, MagickGetVersionString(): added. Added for
+    convenience in getting the API version as a number or string.
+
+##############################################################################
+
+Monday, 2004-10-18
+
+- MagickWand for PHP v0.0.7
+
+- Made several changes to source which *should* allow for direct compilation
+  under Windows. (Need someone to develop a Windows compilation guide.)
+
+##############################################################################
+
+Friday, 2004-10-22
+
+- MagickWand for PHP v0.0.8
+
+- Requested, received and have implemented the following functions:
+
+  - DrawClearException(), MagickClearException(), PixelClearException(),
+    PixelClearIteratorException(). These functions are NOT user visible; they
+    are called each time the requisite wand / iterator is sent to / retrieved
+    by a PHP function (except the *Exception() functions, of course). They are
+    called to ensure that any exceptions that are "reported" by a PHP function
+    (generally via the return value FALSE), occurred as a result of the
+    particular actions the functions took, not as a result of prior actions
+    by other functions.
+  
+  - MagickGetImagesBlob() -- In PHP it returns the BLOB of the MagickWand's
+    image sequence, or explicit FALSE (suitable for === testing), if an error
+    occurred.
+
+- Changed the functionality of some of the C-API-connected PHP functions, and
+  added some convenience functions. See the descriptions that follow:
+
+  - MagickSetFilename(), MagickSetImageFilename(): changed. The filename
+    argument can be left out, or specified as NULL; this sets the
+    corresponding filename to "" (empty string).
+
+  - MagickEchoImagesBlob(): outputs the BLOB of the MagickWand's image
+    sequence to stdout (which is the user's browser on the web). Returns TRUE
+    on success, or FALSE if an error occurred.
+
+    Example:    
+      header( 'Content-type: ' . MagickGetImageMimeType( $mgck_wand ) );
+      MagickEchoImageBlob( $mgck_wand );
+
+  - The following Magick*Channel*() functions have been removed from the PHP
+    extension; their C API namesakes are instead called by their "sister" PHP
+    functions, once an optional ChannelType constant is supplied as the last
+    parameter:
+
+      C API functions that have         PHP equivalents, once optional
+      been removed                      channel_type argument is supplied
+      -------------------------------------------------------------------
+      MagickBlurImageChannel()          MagickBlurImage()
+      MagickCompareImageChannels()      MagickCompareImages()
+      MagickConvolveImageChannel()      MagickConvolveImage()
+      MagickEvaluateImageChannel()      MagickEvaluateImage()
+      MagickFxImageChannel()            MagickFxImage()
+      MagickGammaImageChannel()         MagickGammaImage()
+      MagickGaussianBlurImageChannel()  MagickGaussianBlurImage()
+      MagickGetImageChannelDepth()      MagickGetImageDepth()
+      MagickGetImageChannelExtrema()    MagickGetImageExtrema()
+      MagickLevelImageChannel()         MagickLevelImage()
+      MagickNegateImageChannel()        MagickNegateImage()
+      MagickSetImageChannelDepth()      MagickSetImageDepth()
+      MagickSharpenImageChannel()       MagickSharpenImage()
+      MagickThresholdImageChannel()     MagickThresholdImage()
+      MagickUnsharpMaskImageChannel()   MagickUnsharpMaskImage()
+
+    For example:
+    C:
+      MagickBlurImageChannel( mgck_wnd, BlueChannel, radius, sigma );
+
+    is equivalent to
+
+    PHP:
+      MagickBlurImage( $mgck_wnd, $radius, $sigma, MW_BlueChannel );
+
+    The ChannelType constant argument, if supplied to the PHP function, "turns
+    on" a call to MagickBlurImageChannel(), in the C API underlying the PHP
+    extension -- MagickBlurImageChannel() just can't be called by name in PHP.
+
+    Calling MagickBlurImage() itself, i.e.:
+    C:
+      MagickBlurImage( mgck_wnd, radius, sigma );
+
+    is still equivalent to 
+
+    PHP:
+      MagickBlurImage( $mgck_wnd, $radius, $sigma );
+
+    That has NOT changed.
+
+  - MagickNegateImage(): changed. Its definition in PHP is now as follows:
+
+      bool MagickNegateImage( MagickWand mgck_wnd
+                              [, bool only_the_gray [, int channel_type]] )
+
+    The only_the_gray parameter is FALSE by default (i.e., if it is not
+    specified); if set to TRUE, only grayscale pixels within the image will be
+    negated, e.g.:
+    C:
+      MagickNegateImage( mgck_wnd, MagickFalse );
+    
+    is equivalent to
+
+    PHP:
+      MagickNegateImage( $mgck_wnd, FALSE );
+      OR
+      MagickNegateImage( $mgck_wnd );
+
+    The optional channel_type parameter enables a call to
+    MagickNegateImageChannel(), as was discussed above.
+
+    If one wants to MagickNegateImageChannel() an image in PHP, one MUST
+    specify the value of only_the_gray, e.g.:
+    C:
+      MagickNegateImageChannel( mgck_wnd, RedChannel, MagickFalse );
+    
+    is equivalent to
+
+    PHP:
+      MagickNegateImage( $mgck_wnd, FALSE, MW_RedChannel );
+
+  - Finished approximately 1/3 of the function documentation.
+
+##############################################################################
+
+Tuesday, 2004-11-09
+
+- MagickWand for PHP v0.0.9
+
+- MagickWand for PHP v0.0.9 has a minimum requirement of ImageMagick-6.1.3-6;
+  several of the output functions will not work correctly otherwise.
+
+- MagickWand for PHP v0.0.8 was never announced due to the discovery of a bug:
+  the PHP API functions which were supposed to return exception information,
+  all cleared the exceptions when the wand pointers were retrieved from PHP's
+  internals, and as a result, always returned "all clear", (i.e. no exceptions
+  found), so to speak.
+
+- Above bug FIXED.
+
+- Removed the following aliases:
+  - MagickGetSamplingFactorsArray() (alias of MagickGetSamplingFactors())
+  - MagickSetSamplingFactorsArray() (alias of MagickSetSamplingFactors())
+  - MagickGetImageBlobSize() (alias of MagickGetImageSize())
+
+- Implemented the following functions directly, in order to keep up with the C
+  API:
+  - DrawGetTextAlignment()
+  - DrawSetTextAlignment()
+  - MagickGetFormat() - NOTE: the format returned by this function must be
+                        explicitly set but MagickSetFormat(), before it will
+                        return a value; it is NOT automatically set, unlike
+                        the format returned by MagickGetImageFormat().
+  - MagickSetFormat()
+  - MagickWriteImagesFile()
+
+- Indirectly implemented the new MagickQueryMultilineFontMetrics(). It can be
+  called in PHP by supplying an optional boolean TRUE as the 4th argument to
+  MagickQueryFontMetrics() and it's kin, like so:
+
+  MagickQueryFontMetrics( MagickWand mgck_wnd, DrawingWand drw_wnd,
+                          string txt [, bool multiline] )
+
+  MagickGetCharWidth( MagickWand mgck_wnd, DrawingWand drw_wnd,
+                      string txt [, bool multiline] )
+
+  MagickGetCharHeight( MagickWand mgck_wnd, DrawingWand drw_wnd,
+                       string txt [, bool multiline] )
+
+  MagickGetTextAscent( MagickWand mgck_wnd, DrawingWand drw_wnd,
+                       string txt [, bool multiline] )
+
+  MagickGetTextDescent( MagickWand mgck_wnd, DrawingWand drw_wnd,
+                        string txt [, bool multiline] )
+
+  MagickGetStringWidth( MagickWand mgck_wnd, DrawingWand drw_wnd,
+                        string txt [, bool multiline] )
+
+  MagickGetStringHeight( MagickWand mgck_wnd, DrawingWand drw_wnd,
+                         string txt [, bool multiline] )
+
+  MagickGetMaxTextAdvance( MagickWand mgck_wnd, DrawingWand drw_wnd,
+                           string txt [, bool multiline] )
+
+- Added the AlignType constants (used by DrawGetTextAlignment() and
+  DrawSetTextAlignment():
+  - MW_UndefinedAlign
+  - MW_LeftAlign
+  - MW_CenterAlign
+  - MW_RightAlign
+
+- Added MagickGetMimeType(). Returns the HTTP MIME media-type of the
+  MagickWand; the MagickWand's format must be set with MagickSetFormat()
+  BEFORE this function is called, otherwise, an error will occur. Use with
+  MagickEchoImagesBlob() to output the BLOB of all the images in a MagickWand,
+  if the format supports multi-image images.
+
+  Example:
+    MagickSetFormat( $mgck_wand, 'JPEG' );
+    header( 'Content-type: ' . MagickGetMimeType( $mgck_wand ) );
+    MagickEchoImagesBlob( $mgck_wand );
+
+- Added MagickReadImages(). Calls the equivalent of MagickReadImage() on each
+  filename in a numerically indexed array of filenames. Returns TRUE if all
+  reads have been successful.
+
+  Examples:
+    MagickReadImages( $mgck_wand, array( '1.jpg', '2.gif', '3.png' ) );
+
+    MagickReadImages( $mgck_wand, glob( './*.jpg' ) );
+
+  ("glob" function is present in PHP 5+).
+
+- MagickWriteImage(), MagickWriteImageFile(), MagickWriteImages(),
+  MagickWriteImagesFile(): changed. They now return TRUE if image(s) written
+  successfully, FALSE if the MagickWand contains no images, and will output
+  fatal errors (halting script execution), describing any errors which
+  occur during image writing.
+
+- Flux in PHP API (mostly programmer [me] caused) should now be over; no more
+  major changes will be made.
+
+- DrawBezier(), DrawPolygon(), DrawPolyline(): changed (again, but for the
+  last time). They now accept even-length ARRAYS of numbers, over a specified
+  minimum amount, which represent ordinates in co-ordinate space, instead of
+  the list of numbers, as was the case previously.
+
+  Details:
+
+    DrawBezier( $d_wnd, array( $x1, $y1, $x2, $y2, $x3, $y3 ) )
+
+  and
+
+    DrawPolygon( $d_wnd, array( $x1, $y1, $x2, $y2, $x3, $y3 ) )
+
+  require an array with at least six (6) elements (3 coordinates), and
+      
+    DrawPolyline( $d_wnd, array( $x1, $y1, $x2, $y2 ) )
+  
+  require an array with at least four (4) elements (2 coordinates).
+
+##############################################################################
+
+Wednesday, 2004-12-01
+
+- MagickWand for PHP v0.1.0
+
+- MagickWand for PHP v0.1.0 has a minimum requirement of ImageMagick-6.1.5-4.
+
+- Added MagickNewImage(). It differs from its C API counterpart in that it
+  accepts an ImageMagick color string, instead of a PixelWand.
+
+  Declaration:
+
+    bool MagickNewImage( MagickWand mgck_wnd,
+                         float width, float height
+                         [, string imagemagick_col_str] )
+
+  It adds a blank image canvas of the specified size and background color to a
+  MagickWand's image list.
+
+- Completed the MagickWand For PHP Manual; it is in HTML format, and is
+  included in HTML format, in the "docs" folder of the source distribution
+  archive.
+
+  There is also a Windows help file (.chm) version of the documentation
+  available from:
+
+  http://www.magickwand.org/download/php/windows/MagickWandForPHPManual.chm.zip
+
+- Fixed error where functions that were supposed to return "" (empty string),
+  were actually returning explicit FALSE, which was only supposed to be the
+  return value if an error occurred.
+
+##############################################################################
+
+Monday, 2004-12-28
+
+- MagickWand for PHP v0.1.1
+
+- MagickWand for PHP v0.1.1 has a minimum requirement of ImageMagick-6.1.7-5.
+
+- Enabled MagickWand for PHP support for the ImageMagick pseudo-formats
+    CAPTION:
+    FRACTAL:
+    GRADIENT:
+    LABEL:
+    NULL:
+    PLASMA:
+    TILE:
+    VID:
+
+  the 4 ImageMagick built-in image formats:
+    MAGICK:GRANITE
+    MAGICK:LOGO
+    MAGICK:NETSCAPE
+    MAGICK:ROSE
+
+  and the approx. 50 ImageMagick built-in image patterns:
+    PATTERN:BRICKS
+    PATTERN:CHECKERBOARD
+    PATTERN:CIRCLES
+    PATTERN:CROSSHATCH
+    etc.
+
+  See the 2nd, 3rd and 4th tables on the "ImageMagick - Image Formats" page:
+  http://imagemagick.org/www/formats.html.
+
+  Note: case is irrelevant in the various ImageMagick image formats/patterns,
+        unless you are referring to a file, as in
+          "tile:./imgtile.png"
+        or 
+          "vid:imgs/filename.png"
+
+  Further note: all files referred to in any ImageMagick image formats/patterns
+                must pass php.ini's safe_mode, open_basedir, etc. restrictions,
+                or script will fail.
+
+  Their functionality is accessed as follows:
+
+    $mgck_wnd = NewMagickWand();
+    MagickSetWandSize($mgck_wnd, 100, 125);
+    MagickReadImage($mgck_wnd, 'gradient:#FF6600-#990000');
+
+  which creates a dark-orange to maroon vertical gradient.
+
+- Functions which accept a PixelWand resource as an argument can now also accept
+  a valid ImageMagick color string, and the MagickWand for PHP API will create
+  the neccessary PixelWand, set it to the desired color, use it in the desired
+  function, and then destroy it.
+
+  Because of the behind the scenes PixelWand memory allocation/deallocation, it
+  is likely (but unproven), that, for repeated color setting (as in
+  DrawSetFillColor(), etc.), using one PixelWand resource in PHP and just
+  setting it to the various different colors you might need in a script, may be
+  faster (and certainly less memory intensive), than constantly using color
+  strings.
+
+  This is just a supposition, however, and the difference is only likely to
+  become obvious with multiple requests occurring at once to larger scripts.
+
+- Requested that the developers implement a function to clear DrawingWands of
+  their associated commands, so that they could be reused without having to
+  destroy them, and now, all the resources have such functions associated with
+  their APIs.
+
+  So, enter: 
+
+    ClearDrawingWand()
+    ClearMagickWand()
+    ClearPixelIterator()
+    ClearPixelWand()
+
+  I don't really see the purpose of ClearMagickWand(), ClearPixelIterator(), or
+  ClearPixelWand(), but they are included in the MagickWand for PHP API for
+  completeness.
+
+- Two minor semantic changes, but original funtionality proved annoying in
+  actual usage:
+
+    - Changed MagickAddImage(): it now adds only the current active image of
+      its second MagickWand argument to the image list of the first MagickWand
+      argument, instead of the entire image list, as in the C API's version.
+  
+    - Added MagickAddImages(): replicates the functionality of the C API's
+      MagickAddImage(), noted as changed in the PHP API above.
+
+##############################################################################
+
+Wednesday, 2005-01-06
+
+- MagickWand for PHP v0.1.2
+
+- MagickWand for PHP v0.1.2 has a minimum requirement of ImageMagick-6.1.7-6.
+
+- Fixed some annoying logic in the way MagickWand for PHP writes image files /
+  outputs image BLOBs (Binary Large OBjects).
+
+  MagickWand for PHP now EXPLICITLY follows this logic when writing files /
+  returning BLOBs:
+
+  - For the MagickWand's image sequence
+
+    - the MagickWand's image format, and ONLY the image format determines the
+      format of the output / returned image
+
+    - if the format is not set, a fatal PHP error occurs
+
+    - this applies to MagickWriteImages() (when join_images is TRUE),
+      MagickWriteImagesFile(), MagickGetImagesBlob(), and
+      MagickEchoImagesBlob()
+
+  - For an individual image
+
+    - first the image's image format is checked, and, if it is not set, the
+      MagickWand's image format is checked. If there is a MagickWand image
+      format set, the image's format is set to that; if the MagickWand's image
+      format is not set, (i.e. no MagickWand format and no image format), a
+      fatal PHP error will occur.
+
+    - the image's image format, (and if it is not set, the MagickWand's), and
+      ONLY those image formats determine the format of the output / returned
+      image
+
+    - this applies to MagickWriteImages() (when join_images is FALSE -- the
+      default), MagickWriteImageFile(), MagickGetImageBlob(), and
+      MagickEchoImageBlob()
+
+##############################################################################
+
+Monday, 2005-01-11
+
+- MagickWand for PHP v0.1.3
+
+- MagickWand for PHP v0.1.3 has a minimum requirement of ImageMagick-6.1.8-4
+
+- MagickSetFormat() and MagickSetImageFormat() now check the image format
+  before setting it, and if it is not an available format, a fatal PHP error
+  occurs. (Previously, the error arising from the setting of an unavailable
+  format would only be "realized" by the API when an attempt to write an image
+  or a BLOB in the non-existent format was made.)
+
+- Added the new MagickWand C API functions MagickShadowImage() and
+  MagickGetImageDistortion().
+
+  (NOTE: The new MagickGetImageChannelDistortion() can be called by supplying
+         the desired channel (as a ChannelType constant), as the fourth
+	 parameter to MagickGetImageDistortion().
+	 MagickGetImageDistortion() is declared as follows (PHP):
+
+         MagickGetImageDistortion( MagickWand mgck_wnd, MagickWand ref_wnd,
+	                           MetricType metric [, ChannelType channel] )
+  
+         where "channel" is optional and causes the function to call the C
+	 API's MagickGetImageChannelDistortion() if supplied as a valid
+	 ChannelType constant.
+
+##############################################################################
+
+Thursday, 2005-03-31
+
+- MagickWand for PHP v0.1.4
+
+- MagickWand for PHP v0.1.4 has a minimum requirement of ImageMagick-6.2.1-1
+
+- Added the new MagickWand C API functions MagickGetImageProperty(),
+  MagickIdentifyImage() and MagickSepiaToneImage().
+
+##############################################################################
+
+Thursday, 2005-04-28
+
+- MagickWand for PHP v0.1.5
+
+- MagickWand for PHP v0.1.5 has a minimum requirement of ImageMagick-6.2.2
+
+- Modified the MagickWandForPHP source to call the PHP API function
+  expand_filepath() to retrieve the full path of any file before the
+  ImageMagick API accesses it. Added to resolve an issue ImageMagick was
+  having with the relative paths "./" and "../"
+
+- MagickWriteImageFile() and MagickWriteImagesFile() have been temporarily
+  disabled due to Windows issues with their ImageMagick counterparts.
+
+##############################################################################
+
+Sunday, 2005-08-02
+
+- MagickWand for PHP v0.1.6
+
+- MagickWand for PHP v0.1.6 has a minimum requirement of ImageMagick-6.2.4-0
+
+- Added: IsPixelWandSimilar(), MagickGetCompression(),
+  MagickGetCompressionQuality(), MagickGetImagePage(),
+  MagickGetImagePixelColor(), MagickGetImageRegion(),
+  MagickGetImageTotalInkDensity(), MagickGetOption(), MagickGetPage(),
+  MagickGetQuantumRange(), MagickSetBackgroundColor(), MagickSetCompression(),
+  MagickSetImageAttribute(), MagickSetImageExtent(), MagickSetImagePage(),
+  MagickSetOption(), MagickSetPage(), MagickSetType(),
+  PixelGetPreviousIteratorRow(), PixelSetFirstIteratorRow(),
+  PixelSetLastIteratorRow().
+
+##############################################################################
+
+Wednesday, 2005-08-17
+
+- MagickWand for PHP v0.1.7
+
+- MagickWand for PHP v0.1.7 has a minimum requirement of ImageMagick-6.2.4-1
+
+- Fixed MagickModulateImage() bug referenced here:
+  http://redux.imagemagick.org/discussion-server/viewtopic.php?t=4630
+
+- MagickWand for PHP now causes a MagickWand's image format to be set to the
+  image format of the first image that is read into it. Ensures that the
+  MagickGetMimeType(), MagickEchoImagesBlob(), and MagickGetImagesBlob()
+  functions handle multiple-frame image formats automatically, without the
+  user having to specify the MagickWand's format.
+  If the MagickWand's images are removed,  and other images read into it, the
+  MagickWand's format becomes that of the first image read into it (again).
+
+  Please note that this in NOT how the C API functions, but that this change
+  is ONLY made in the MagickWand for PHP interface.
+
+##############################################################################
+
+Tuesday, 2005-09-12
+
+- MagickWand for PHP v0.1.8
+
+- MagickWand for PHP v0.1.8 has a minimum requirement of ImageMagick-6.2.4-5
+
+- Added the MagickGetResource(), MagickGetImageTicksPerSecond(),
+  MagickSetImageTicksPerSecond(), and MagickThumbnailImage() functions
+
+- Updated the MagickRadialBlurImage() function; it is now defined as follows:
+
+    bool MagickRadialBlurImage( MagickWand mgck_wnd, float angle
+                                                        [, int channel_type] )
+
+  where if the optional channel_type argument (one of the ChannelType
+  constants), is specified, the new MagickWand C API function
+  MagickRadialBlurImageChannel() will be called.
+
+- Added the MagickDisplayImage() and MagickDisplayImages() funtions as odes to
+  laziness;
+
+    MagickDisplayImage($mgck_wnd);
+   
+  is equivalent to the following code:
+
+    header('Content-Type: ' . MagickGetImageMimeType($mgck_wnd));
+    MagickEchoImageBlob($mgck_wnd);
+
+  Ditto MagickDisplayImages();
+
+- Fixed bug on Windows where users would get error about disallowed format
+  when reading a file with a full path name.

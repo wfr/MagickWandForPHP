@@ -1,0 +1,54 @@
+
+MagickWand for PHP
+
+*******************************************************************************
+
+MagickWand for PHP is a native PHP interface to the new ImageMagick MagickWand
+API.
+
+It is an almost complete port of the ImageMagick C API, excluding some X-Server
+related functionality, and progress monitoring.
+
+The functionality of the MagickWand API is pretty much unparalelled in the PHP
+imaging world, allowing the PHP programmer read/write/manipulate access to
+multiple image formats, along with vector drawing, pixel-level manipulation,
+and special effects capabilities and more.
+
+*******************************************************************************
+
+ImageMagick (in general) has a fairly high learning curve, but the new
+MagickWand API, on which this extension is based, is a thousand times clearer,
+and as a result, easier to understand and manipulate.
+
+It is still complex, to a degree, but it it is capable of some amazing stuff,
+so it is well worth the time and effort to learn it.
+
+However, it is in many ways still beta software. Both the ImageMagick
+MagickWand C API, and MagickWand for PHP are apparently stable, but they still
+need testing, so take that into account.
+
+MagickWand for PHP tries to stay up to date with the latest releases of
+ImageMagick, so if your PHP compilation fails with an error in some "zif_"
+function about references to a function that can't be found, you most likely
+need to update your ImageMagick to the last version MagickWand is known to
+have successfully compiled against (see INSTALL in this directory for that
+information).
+
+The last-known-good ImageMagick version, as well as the required ImageMagick
+version, will always be indicated at the top of the INSTALL file in this
+directory, and notations will be put in the ChangeLog file as well.
+
+*******************************************************************************
+
+Check the ChangeLog and INSTALL files for more necessary information.
+
+The ./docs folder contains the manual.
+
+The ./demo folder contains 3 files (so far):
+  demo.gif   : an example script-generated animated GIF file
+  demo.php   : the script which generates the demo.gif file
+  demo_c.php : the same script with very detailed comments
+
+*******************************************************************************
+
+So, intrepid traveller, forth, to the journey!

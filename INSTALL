@@ -1,0 +1,61 @@
+MagickWand Extension for PHP :: Installation Instructions
+
+** REQUIRED **  ImageMagick version :: 6.3.5-9
+Last-known-good ImageMagick version :: 6.3.5-9
+
+Install without PHP source
+
+1) Either install the required ImageMagick version or make sure that it
+   is installed (running "Wand-config --version" should give you the
+   required information).
+
+2) Type
+
+       phpize
+       ./configure
+       make
+       make install
+
+3) Add
+
+       extension=magickwand.so
+
+   to your "php.ini" initialization file.
+
+
+Install with PHP Source
+
+1) Either install the required ImageMagick version or make sure that it
+   is installed (running "Wand-config --version" should give you the
+   required information).
+
+2) Extract the contents of the archive this file was in, or copy the
+   entire directory the this file is in to the "ext" directory in the PHP
+   source folder. Rename the folder to "magickwand" so if your PHP source
+   folder is called "PHP_SRC_DIR", you should end up with a directory
+   structure like the following:
+
+       PHP_SRC_DIR/ext/magickwand/
+
+3) Go into the "PHP_SRC_DIR/ext/magickwand/" directory, and run "phpize".
+   (A note: if this is the first time PHP is being installed, you have to
+   install PHP without MagickWand, because "phpize" is a part of the PHP
+   distribution.)
+
+4) Go back to the main PHP source directory (from the example above, it
+   would be "PHP_SRC_DIR", and run:
+
+   rm ./configure
+
+   and then
+
+   ./buildconf --force
+
+   to remove and rebuild the PHP configure script.
+
+5) Follow the PHP installation instructions, but add
+
+   --with-magickwand=IMG_MGCK_DIR
+   
+   to your ./configure command, replacing "IMG_MGCK_DIR" with the full path
+   of the directory where ImageMagick is installed (in most cases "/usr").

@@ -1,0 +1,8 @@
+# $Id: Makefile.in
+
+LTLIBRARY_NAME          = libmagickwand.la
+LTLIBRARY_SOURCES       = magickwand.c
+LTLIBRARY_SHARED_NAME   = magickwand.la
+LTLIBRARY_SHARED_LIBADD = $(MAGICKWAND_SHARED_LIBADD)
+
+include $(top_srcdir)/build/dynlib.mk
